@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}QuizMaster AI — Dashboard{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+{% endblock %}
+
+{% block header_nav %}
+<div class="user-pill">
+  <span class="online-dot"></span>
+  <span id="nav-username">—</span>
+</div>
+<button class="btn-ghost" onclick="App.logout()">Sign Out</button>
+{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN: Home / Dashboard
+════════════════════════════════════════════════════════ -->
+<section id="screen-home" class="screen active">
+  <div class="dashboard-wrap">
+
+    <header class="dash-header">
+      <div>
+        <h2 class="dash-title">Welcome back, <span class="text-accent" id="home-username">—</span></h2>
+        <p class="dash-sub">Ready for a challenge? Pick a topic and start.</p>
+      </div>
+    </header>
+
+    <!-- New Quiz Card -->
+    <div class="card new-quiz-card">
+      <h3 class="card-title">⚡ New Quiz</h3>
+
+      <div class="quiz-setup-row">
+        <div class="field">
+          <label for="topic-input">Topic</label>
+          <input id="topic-input" type="text" placeholder="e.g. Python, DBMS, Networking…">
+        </div>
+        <div class="field field-narrow">
+          <label for="count-select">Questions</label>
+          <select id="count-select">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+          </select>
+        </div>
+        <button class="btn-start" onclick="App.startQuiz()">Start →</button>
+      </div>
+
+      <!-- Quick-topic chips -->
+      <div class="topic-grid">
+        <button class="topic-chip" onclick="App.selectTopic(this,'Python')">🐍 Python</button>
+        <button class="topic-chip" onclick="App.selectTopic(this,'DBMS')">🗄️ DBMS</button>
+        <button class="topic-chip" onclick="App.selectTopic(this,'Operating Systems')">💻 OS</button>
+        <button class="topic-chip" onclick="App.selectTopic(this,'Networking')">🌐 Networking</button>
+        <button class="topic-chip" onclick="App.selectTopic(this,'Data Structures')">🌲 DSA</button>
+        <button class="topic-chip" onclick="App.selectTopic(this,'Machine Learning')">🤖 ML</button>
+        <button class="topic-chip" onclick="App.selectTopic(this,'JavaScript')">📜 JavaScript</button>
+        <button class="topic-chip" onclick="App.selectTopic(this,'C++')">⚙️ C++</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar" role="tablist">
+      <button class="tab active" role="tab" onclick="App.switchTab(this,'tab-leaderboard')">🏆 Leaderboard</button>
+      <button class="tab"        role="tab" onclick="App.switchTab(this,'tab-history')">📋 My History</button>
+    </div>
+
+    <!-- Leaderboard panel -->
+    <div id="tab-leaderboard" class="tab-panel" role="tabpanel">
+      <div class="lb-toolbar">
+        <input id="lb-filter" type="text" placeholder="Filter by topic…"
+               oninput="App.loadLeaderboard(this.value)">
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="lb-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Player</th><th>Topic</th><th>Score</th><th>Accuracy</th><th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="lb-body">
+            <tr><td colspan="6" class="table-empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- History panel -->
+    <div id="tab-history" class="tab-panel" role="tabpanel" style="display:none;">
+      <div class="table-scroll">
+        <table class="data-table" id="history-table">
+          <thead>
+            <tr><th>Topic</th><th>Score</th><th>Accuracy</th><th>Date</th></tr>
+          </thead>
+          <tbody id="history-body">
+            <tr><td colspan="4" class="table-empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN: Quiz
+════════════════════════════════════════════════════════ -->
+<section id="screen-quiz" class="screen">
+  <div class="quiz-wrap">
+
+    <!-- Meta bar -->
+    <div class="quiz-meta">
+      <span class="q-label" id="q-counter">Question 1 of 5</span>
+      <span class="q-score">Score: <strong id="q-score">0</strong></span>
+    </div>
+    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-fill" id="q-progress"></div>
+    </div>
+
+    <!-- Loading skeleton -->
+    <div id="quiz-loading" class="quiz-loading">
+      <div class="spinner"></div>
+      <p>🤖 Generating question…</p>
+    </div>
+
+    <!-- Question card -->
+    <div id="quiz-content" style="display:none;">
+      <div class="question-card">
+        <span class="topic-badge" id="q-topic-badge">TOPIC</span>
+        <p class="question-text" id="q-text"></p>
+        <div class="options-list" id="q-options"></div>
+        <div class="feedback-box" id="q-feedback" style="display:none;">
+          <p class="feedback-head" id="fb-head"></p>
+          <p class="feedback-body" id="fb-body"></p>
+        </div>
+      </div>
+      <button class="btn-next" id="btn-next">Next Question →</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SCREEN: Results
+════════════════════════════════════════════════════════ -->
+<section id="screen-result" class="screen">
+  <div class="result-wrap">
+    <div class="result-card">
+      <span class="result-emoji" id="result-emoji">🏆</span>
+      <h2 class="result-title" id="result-title">Quiz Complete!</h2>
+      <div class="result-score" id="result-score">0/5</div>
+      <p class="result-sub" id="result-sub"></p>
+      <div class="result-actions">
+        <button class="btn-again" onclick="App.showScreen('screen-home')">Play Again</button>
+        <button class="btn-lb"    onclick="App.goLeaderboard()">View Leaderboard</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

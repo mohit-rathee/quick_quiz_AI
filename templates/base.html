@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}QuizMaster AI{% endblock %}</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Base CSS always loaded -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+
+  <!-- Per-page CSS -->
+  {% block styles %}{% endblock %}
+</head>
+<body>
+
+  <!-- Ambient Orbs -->
+  <div class="orb orb1" aria-hidden="true"></div>
+  <div class="orb orb2" aria-hidden="true"></div>
+
+  <!-- Header -->
+  <header id="site-header">
+    <a class="logo" href="/">
+      Quiz<span>Master</span> AI
+      <em class="logo-tag">Powered by AI</em>
+    </a>
+    <nav id="header-nav">
+      {% block header_nav %}{% endblock %}
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" role="alert" aria-live="polite"></div>
+
+  <!-- Shared JS always loaded -->
+  <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+
+  <!-- Per-page JS -->
+  {% block scripts %}{% endblock %}
+</body>
+</html>
